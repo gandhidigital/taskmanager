@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { createTask, fetchUsers } from './api';
+import React, { useState } from 'react';
 
-function TaskForm({ onClose, onTaskCreated }) {
+function TaskForm({ onSubmit, onClose, users }) {
   const [title, setTitle] = useState('');
   const [status, setStatus] = useState('Por hacer');
   const [responsible, setResponsible] = useState('');
@@ -9,46 +8,33 @@ function TaskForm({ onClose, onTaskCreated }) {
   const [priority, setPriority] = useState('Media');
   const [delivery, setDelivery] = useState('');
   const [notes, setNotes] = useState('');
-  const [users, setUsers] = useState([]);
 
-  useEffect(() => {
-    const loadUsers = async () => {
-      try {
-        const userData = await fetchUsers();
-        setUsers(userData);
-      } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-      }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (typeof onSubmit !== 'function') {
+      console.error('❌ onSubmit no es una función');
+      return;
+    }
+
+    const taskData = {
+      title,
+      status,
+      responsible,
+      validator,
+      priority,
+      dueDate: delivery ? new Date(delivery) : null,
+      notes,
     };
 
-    loadUsers();
-  }, []);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const newTask = {
-        title,
-        status,
-        responsible,
-        validator,
-        priority,
-        dueDate: delivery,
-        notes,
-      };
-      const savedTask = await createTask(newTask);
-      onTaskCreated(savedTask);
-      onClose();
-    } catch (error) {
-      console.error('Error al crear tarea:', error);
-    }
+    onSubmit(taskData);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-6 rounded w-full max-w-xl shadow-lg">
-        <h2 className="text-xl font-bold mb-4 font-montserrat">Crear nueva tarea</h2>
-        <form onSubmit={handleSubmit} className="space-y-4 font-nunito">
+    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
+      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
+        <h2 className="text-xl font-semibold mb-4 font-montserrat">Crear nueva tarea</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+
           <div>
             <label className="block text-sm font-medium">Título</label>
             <input
@@ -60,35 +46,22 @@ function TaskForm({ onClose, onTaskCreated }) {
             />
           </div>
 
+          <div>
+            <label className="block text-sm font-medium">Estado</label>
+            <select
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="Por hacer">Por hacer</option>
+              <option value="En progreso">En progreso</option>
+              <option value="Bloqueado">Bloqueado</option>
+              <option value="Validación">Validación</option>
+              <option value="Completado">Completado</option>
+            </select>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Estado</label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option>Por hacer</option>
-                <option>En progreso</option>
-                <option>Bloqueado</option>
-                <option>Validación</option>
-                <option>Completado</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Prioridad</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option>Alta</option>
-                <option>Media</option>
-                <option>Baja</option>
-              </select>
-            </div>
-
             <div>
               <label className="block text-sm font-medium">Responsable</label>
               <select
@@ -116,7 +89,9 @@ function TaskForm({ onClose, onTaskCreated }) {
                 ))}
               </select>
             </div>
+          </div>
 
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium">Fecha de entrega</label>
               <input
@@ -125,6 +100,19 @@ function TaskForm({ onClose, onTaskCreated }) {
                 onChange={(e) => setDelivery(e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium">Prioridad</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2"
+              >
+                <option value="Alta">Alta</option>
+                <option value="Media">Media</option>
+                <option value="Baja">Baja</option>
+              </select>
             </div>
           </div>
 
@@ -141,7 +129,7 @@ function TaskForm({ onClose, onTaskCreated }) {
           <div className="flex justify-end space-x-2">
             <button
               type="submit"
-              className="bg-[#7037FA] text-white px-4 py-2 rounded hover:bg-opacity-90"
+              className="bg-[#7037FA] text-white px-4 py-2 rounded hover:bg-opacity-80"
             >
               Crear
             </button>

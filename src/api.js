@@ -1,24 +1,19 @@
-const API_URL = 'http://localhost:3000/api';
+import axios from 'axios';
 
-export async function fetchTasks() {
-  const response = await fetch(`${API_URL}/tasks`);
-  if (!response.ok) throw new Error('Error al obtener tareas');
-  return response.json();
-}
+const API_BASE_URL = 'http://localhost:3000/api';
 
-export async function createTask(task) {
-  const response = await fetch(`${API_URL}/tasks`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(task),
-  });
-  if (!response.ok) throw new Error('Error al crear tarea');
-  return response.json();
-}
+export const fetchTasks = async () => {
+  const res = await axios.get(`${API_BASE_URL}/tasks`);
+  return res.data;
+};
 
-export async function fetchUsers() {
-  const response = await fetch(`${API_URL}/users`);
-  if (!response.ok) throw new Error('Error al obtener usuarios');
-  return response.json();
-}
+export const fetchUsers = async () => {
+  const res = await axios.get(`${API_BASE_URL}/users`);
+  return res.data;
+};
+
+export const createTask = async (taskData) => {
+  const res = await axios.post(`${API_BASE_URL}/tasks`, taskData);
+  return res.data;
+};
 

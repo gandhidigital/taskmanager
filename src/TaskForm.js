@@ -1,89 +1,87 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import './TaskForm.css';
 
-function TaskForm({ onSubmit, onClose, users }) {
-  const [title, setTitle] = useState('');
-  const [status, setStatus] = useState('Por hacer');
-  const [responsible, setResponsible] = useState('');
-  const [validator, setValidator] = useState('');
-  const [priority, setPriority] = useState('Media');
-  const [delivery, setDelivery] = useState('');
-  const [notes, setNotes] = useState('');
+function TaskForm({ onSubmit, onClose, parentTask, isSubtask, users }) {
+  const [formData, setFormData] = useState({
+    title: '',
+    status: '',
+    assignee: '',
+    validator: '',
+    dueDate: '',
+    notes: '',
+    parentTask: parentTask || null
+  });
+
+  useEffect(() => {
+    setFormData((prev) => ({ ...prev, parentTask }));
+  }, [parentTask]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (typeof onSubmit !== 'function') {
-      console.error('❌ onSubmit no es una función');
-      return;
-    }
-
-    const taskData = {
-      title,
-      status,
-      responsible,
-      validator,
-      priority,
-      dueDate: delivery ? new Date(delivery) : null,
-      notes,
-    };
-
-    onSubmit(taskData);
+    onSubmit(formData);
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-lg">
-        <h2 className="text-xl font-semibold mb-4 font-montserrat">Crear nueva tarea</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-
-          <div>
-            <label className="block text-sm font-medium">Título</label>
+    <div className="modal-overlay">
+      <div className="modal-content form-container">
+        <h2>{isSubtask ? 'Agregar Subtarea' : 'Crear Nueva Tarea'}</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group full-width">
             <input
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
+              name="title"
+              placeholder="Título"
+              value={formData.title}
+              onChange={handleChange}
               required
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium">Estado</label>
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-            >
-              <option value="Por hacer">Por hacer</option>
-              <option value="En progreso">En progreso</option>
-              <option value="Bloqueado">Bloqueado</option>
-              <option value="Validación">Validación</option>
-              <option value="Completado">Completado</option>
-            </select>
-          </div>
+<div className="form-group full-width">
+  <select
+    name="status"
+    value={formData.status}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Selecciona estado</option>
+    <option value="Por hacer">Por hacer</option>
+    <option value="En progreso">En progreso</option>
+    <option value="Bloqueado">Bloqueado</option>
+    <option value="Validación">Validación</option>
+    <option value="Completado">Completado</option>
+  </select>
+</div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Responsable</label>
+          <div className="form-row">
+            <div className="form-group">
               <select
-                value={responsible}
-                onChange={(e) => setResponsible(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                name="assignee"
+                value={formData.assignee}
+                onChange={handleChange}
               >
-                <option value="">Selecciona</option>
+                <option value="">Responsable</option>
                 {users.map((user) => (
                   <option key={user._id} value={user._id}>{user.name}</option>
                 ))}
               </select>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">Validador</label>
+            <div className="form-group">
               <select
-                value={validator}
-                onChange={(e) => setValidator(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
+                name="validator"
+                value={formData.validator}
+                onChange={handleChange}
               >
-                <option value="">Selecciona</option>
+                <option value="">Validador</option>
                 {users.map((user) => (
                   <option key={user._id} value={user._id}>{user.name}</option>
                 ))}
@@ -91,55 +89,27 @@ function TaskForm({ onSubmit, onClose, users }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium">Fecha de entrega</label>
-              <input
-                type="date"
-                value={delivery}
-                onChange={(e) => setDelivery(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium">Prioridad</label>
-              <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2"
-              >
-                <option value="Alta">Alta</option>
-                <option value="Media">Media</option>
-                <option value="Baja">Baja</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium">Notas</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full border border-gray-300 rounded px-3 py-2"
-              rows={3}
+          <div className="form-group full-width">
+            <input
+              type="date"
+              name="dueDate"
+              value={formData.dueDate}
+              onChange={handleChange}
             />
           </div>
 
-          <div className="flex justify-end space-x-2">
-            <button
-              type="submit"
-              className="bg-[#7037FA] text-white px-4 py-2 rounded hover:bg-opacity-80"
-            >
-              Crear
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="border border-gray-300 text-gray-700 px-4 py-2 rounded"
-            >
-              Cancelar
-            </button>
+          <div className="form-group full-width">
+            <textarea
+              name="notes"
+              placeholder="Notas"
+              value={formData.notes}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div className="form-buttons">
+            <button type="submit">Guardar</button>
+            <button type="button" onClick={onClose}>Cancelar</button>
           </div>
         </form>
       </div>

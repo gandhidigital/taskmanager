@@ -1,65 +1,69 @@
 import React, { useEffect, useState } from 'react';
+import './App.css';
 import TaskTable from './TaskTable';
 import TaskForm from './TaskForm';
-import { fetchTasks, createTask, fetchUsers } from './api';
+import { fetchTasks, fetchUsers, createTask } from './api';
+import logo from './assets/Upload.svg'; // Logo importado
 
 function App() {
   const [tasks, setTasks] = useState([]);
-  const [showForm, setShowForm] = useState(false);
   const [users, setUsers] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedParentTask, setSelectedParentTask] = useState(null);
+  const [isSubtask, setIsSubtask] = useState(false);
 
   useEffect(() => {
-    const loadTasks = async () => {
-      try {
-        const data = await fetchTasks();
-        setTasks(data);
-        const estadosUnicos = [...new Set(data.map(t => t.status))];
-        console.log('📋 Estados únicos encontrados en tareas:', estadosUnicos);
-      } catch (error) {
-        console.error('Error al cargar tareas:', error);
-      }
-    };
-
-    const loadUsers = async () => {
-      try {
-        const data = await fetchUsers();
-        setUsers(data);
-      } catch (error) {
-        console.error('Error al cargar usuarios:', error);
-      }
-    };
-
-    loadTasks();
-    loadUsers();
+    loadData();
   }, []);
 
-  const handleCreate = async (taskData) => {
+  const loadData = async () => {
+    try {
+      const [tasksData, usersData] = await Promise.all([fetchTasks(), fetchUsers()]);
+      setTasks(tasksData);
+      setUsers(usersData);
+    } catch (error) {
+      console.error('Error al cargar datos:', error);
+    }
+  };
+
+  const handleCreateTask = () => {
+    setSelectedParentTask(null);
+    setIsSubtask(false);
+    setIsModalOpen(true);
+  };
+
+  const handleCreateSubtask = (parentId) => {
+    setSelectedParentTask(parentId);
+    setIsSubtask(true);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmitTask = async (taskData) => {
     try {
       const newTask = await createTask(taskData);
-      setTasks((prev) => [...prev, newTask]);
-      setShowForm(false);
-    } catch (err) {
-      console.error('❌ Error al crear tarea:', err);
+      setTasks((prevTasks) => [...prevTasks, newTask]);
+      setIsModalOpen(false);
+    } catch (error) {
+      console.error('Error al crear tarea:', error);
     }
   };
 
   return (
-    <div className="p-4 font-nunito">
-      <h1 className="text-2xl font-bold mb-4 font-montserrat">Administrador de Tareas</h1>
+    <div className="App">
+      <img src={logo} alt="Task Manager Logo" className="logo" />
 
-      <button
-        onClick={() => setShowForm(true)}
-        className="bg-[#7037FA] text-white px-4 py-2 rounded hover:bg-opacity-80 mb-4"
-      >
+      <button onClick={handleCreateTask} className="btn-crear-tarea">
         Crear nueva tarea
       </button>
 
-      <TaskTable tasks={tasks} />
+      <TaskTable tasks={tasks} onCreateSubtask={handleCreateSubtask} />
 
-      {showForm && (
+      {isModalOpen && (
         <TaskForm
-          onClose={() => setShowForm(false)}
-          onSubmit={handleCreate}
+          onSubmit={handleSubmitTask}
+          onClose={() => setIsModalOpen(false)}
+          parentTask={selectedParentTask}
+          isSubtask={isSubtask}
           users={users}
         />
       )}

@@ -53,6 +53,7 @@
   font-size: 14px;
   color: #ffffff;
   font-family: 'Nunito', sans-serif;
+  margin-bottom: 16px;
 }
 
 .form-container textarea {
@@ -61,7 +62,6 @@
 }
 
 .form-container button {
-  margin-top: 16px;
   background-color: #E04B31;
   color: white;
   border: none;
@@ -74,5 +74,39 @@
 
 .form-container button:hover {
   background-color: #DE7543;
+}
+
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* Estilos para el modal flotante */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(38, 32, 38, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background-color: #1e1e1e;
+  padding: 24px;
+  border-radius: 16px;
+  width: 420px;
+  max-width: 95%;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  font-family: 'Nunito', sans-serif;
+  color: white;
 }
 
